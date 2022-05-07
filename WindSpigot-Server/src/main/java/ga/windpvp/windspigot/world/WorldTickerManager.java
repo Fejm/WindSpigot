@@ -12,7 +12,10 @@ import ga.windpvp.windspigot.async.ResettableLatch;
 import ga.windpvp.windspigot.async.world.AsyncWorldTicker;
 import ga.windpvp.windspigot.config.WindSpigotConfig;
 import javafixes.concurrency.ReusableCountLatch;
+import net.minecraft.server.EntityPlayer;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.NetworkManager;
+import net.minecraft.server.PlayerConnection;
 import net.minecraft.server.WorldServer;
 
 public class WorldTickerManager {
@@ -21,7 +24,10 @@ public class WorldTickerManager {
 	private List<WorldTicker> worldTickers = new ArrayList<>();
 
 	// Latch to wait for world tick completion
-	private final ResettableLatch latch;
+	private final ResettableLatch worldTickLatch;
+	
+	// Latch to wait for entity tracking operations
+	private final ResettableLatch trackLatch;
 
 	// Lock for ticking
 	public final static Object LOCK = new Object();
@@ -39,9 +45,14 @@ public class WorldTickerManager {
 		
 		// Initialize the world ticker latch
 		if (WindSpigotConfig.parallelWorld) {
-			this.latch = new ResettableLatch();
+			this.worldTickLatch = new ResettableLatch();
 		} else {
-			this.latch = null;
+			this.worldTickLatch = null;
+		}
+		if (WindSpigotConfig.fullyParallelTracking) {
+			this.trackLatch = new ResettableLatch();
+		} else {
+			this.trackLatch = null;
 		}
 	}
 
@@ -63,9 +74,9 @@ public class WorldTickerManager {
 				
 			}
 			// Null check to prevent resetting the latch when not using parallel worlds
-			if (this.latch != null) {
+			if (this.worldTickLatch != null) {
 				// Reuse the latch
-				this.latch.reset(this.worldTickers.size());
+				this.worldTickLatch.reset(this.worldTickers.size());
 			}
 		}
 	}
@@ -107,11 +118,59 @@ public class WorldTickerManager {
 
 		try {
 			// Wait for worlds to finish ticking then reset latch
-			latch.waitTillZero();
-			this.latch.reset(this.worldTickers.size());;
+			worldTickLatch.waitTillZero();
+			this.worldTickLatch.reset(this.worldTickers.size());;
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		
+		if (WindSpigotConfig.fullyParallelTracking)
+			handleFullyParallelTrackers();
+	}
+	
+	private void handleFullyParallelTrackers () {
+		/* 
+		 * We modify this so that disabling/enabling automatic flushing is only called once,
+		 * the tracker is then updated for each world parallel with multple threads.
+		 */
+		
+		if (MinecraftServer.getServer().getPlayerList().getPlayerCount() != 0) // Tuinity
+		{
+			// Tuinity start - controlled flush for entity tracker packets
+			List<NetworkManager> disabledFlushes = new java.util.ArrayList<>(MinecraftServer.getServer().getPlayerList().getPlayerCount());
+			for (EntityPlayer player : MinecraftServer.getServer().getPlayerList().players) {
+				PlayerConnection connection = player.playerConnection;
+				if (connection != null) {
+					connection.networkManager.disableAutomaticFlush();
+					disabledFlushes.add(connection.networkManager);
+				}
+			}
+			
+			// Entity tracking is done completely parallel, each world has its own tracker
+			// which is run at the same time as other worlds. Each tracker utilizes
+			// multiple threads
+			for (int index = 0; index < this.worldTickers.size(); index++) {
+				if (index < this.worldTickers.size() - 1) {
+					final int indexClone = index;
+					AsyncUtil.run(() -> ((AsyncWorldTicker) this.worldTickers.get(indexClone)).handleParallelTracker(), this.worldTickExecutor);
+				} else {
+					((AsyncWorldTicker) this.worldTickers.get(index)).handleParallelTracker();
+				}
+			}
+			
+			try {
+				// Wait for trackers to finish updating, then prepare for the next tick
+				trackLatch.waitTillZero();
+				trackLatch.reset(this.worldTickers.size());
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			for (NetworkManager networkManager : disabledFlushes) {
+				networkManager.enableAutomaticFlush();
+			}
+		}
+		// Tuinity end - controlled flush for entity tracker packets
 	}
 
 	/**
@@ -124,8 +183,15 @@ public class WorldTickerManager {
 	/**
 	 * @return The count down latch for world ticking
 	 */
-	public ReusableCountLatch getLatch() {
-		return this.latch;
+	public ResettableLatch getWorldTickLatch() {
+		return this.worldTickLatch;
+	}
+	
+	/**
+	 * @return The count down latch for parallel trackers
+	 */
+	public ResettableLatch getTrackerLatch() {
+		return this.trackLatch;
 	}
 	
 	/**
