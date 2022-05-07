@@ -52,7 +52,7 @@ public class WindSpigotConfig {
 		}
 		config.options().copyDefaults(true);
 
-		int configVersion = 20; // Update this every new configuration update
+		int configVersion = 21; // Update this every new configuration update
 
     version = getInt("config-version", configVersion);
 		set("config-version", configVersion);
@@ -145,13 +145,18 @@ public class WindSpigotConfig {
 	public static boolean disableTracking;
 	public static int trackingThreads;
 
+	public static boolean fullyParallelTracking;
+	
 	private static void tracking() {
 		disableTracking = !getBoolean("settings.async.entity-tracking.enable", true);
-		c.addComment("settings.async.entity-tracking.enable", "Enables asynchronous entity tracking");
 		trackingThreads = getInt("settings.async.entity-tracking.threads", 5);
+		
+		fullyParallelTracking = getBoolean("settings.async.entity-tracking.fully-parallel", true);
+		
+		c.addComment("settings.async.entity-tracking.enable", "Enables asynchronous entity tracking for individual worlds.");
 		c.addComment("settings.async.entity-tracking.threads",
 				"The amount of threads to use when asynchronous entity tracking is enabled.");
-		
+		c.addComment("settings.async.entity-tracking.fully-parallel", "Enables updates of multiple worlds' tracker at the same time. This option only works with parallel worlds being enabled.");
 		c.addComment("settings.async.entity-tracking", "Configuration for the async entity tracker.");
 	}
 

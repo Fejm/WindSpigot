@@ -44,7 +44,7 @@ public class EntityTracker {
 	private static int trackerThreads = WindSpigotConfig.trackingThreads; 
 	
 	// All threads but one are handling a task, main thread runs a task once these tasks are started
-	private static ExecutorService trackingThreadPool = Executors.newFixedThreadPool(trackerThreads - 1, 
+	private ExecutorService trackingThreadPool = Executors.newFixedThreadPool(trackerThreads - 1, 
 			new ThreadFactoryBuilder().setNameFormat("Entity Tracker Thread %d").build());
 
 	public EntityTracker(WorldServer worldserver) {
