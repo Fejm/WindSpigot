@@ -1154,7 +1154,6 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
 
 	}
 
-	// WindSpigot - ensure packet sends are synchronized
 	public synchronized void sendPacket(final Packet packet) {
 		if (packet instanceof PacketPlayOutChat) {
 			PacketPlayOutChat packetplayoutchat = (PacketPlayOutChat) packet;
