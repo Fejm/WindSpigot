@@ -1154,7 +1154,7 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
 
 	}
 
-	public void sendPacket(final Packet packet) {
+	public synchronized void sendPacket(final Packet packet) {
 		if (packet instanceof PacketPlayOutChat) {
 			PacketPlayOutChat packetplayoutchat = (PacketPlayOutChat) packet;
 			EntityHuman.EnumChatVisibility flags = this.player.getChatFlags();
