@@ -146,28 +146,29 @@ public class WorldTickerManager {
 				}
 			}
 			
+			Runnable postRunnable = (() -> {
+				try {
+					trackLatch.waitTillZero();
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				trackLatch.reset(this.worldTickers.size());
+				for (NetworkManager networkManager : disabledFlushes) {
+					networkManager.enableAutomaticFlush();
+				}
+			});
+			
 			// Entity tracking is done completely parallel, each world has its own tracker
 			// which is run at the same time as other worlds. Each tracker utilizes
 			// multiple threads
 			for (int index = 0; index < this.worldTickers.size(); index++) {
+				final int indexClone = index;
+
 				if (index < this.worldTickers.size() - 1) {
-					final int indexClone = index;
 					AsyncUtil.run(() -> ((AsyncWorldTicker) this.worldTickers.get(indexClone)).handleParallelTracker(), this.worldTickExecutor);
 				} else {
-					((AsyncWorldTicker) this.worldTickers.get(index)).handleParallelTracker();
+					AsyncUtil.runThenRun(() -> ((AsyncWorldTicker) this.worldTickers.get(indexClone)).handleParallelTracker(), postRunnable);
 				}
-			}
-			
-			try {
-				// Wait for trackers to finish updating, then prepare for the next tick
-				trackLatch.waitTillZero();
-				trackLatch.reset(this.worldTickers.size());
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			
-			for (NetworkManager networkManager : disabledFlushes) {
-				networkManager.enableAutomaticFlush();
 			}
 		}
 		// Tuinity end - controlled flush for entity tracker packets
@@ -181,7 +182,7 @@ public class WorldTickerManager {
 	}
 	
 	/**
-	 * @return The count down latch for world ticking
+	 * @return The count down latch for worl ticking
 	 */
 	public ResettableLatch getWorldTickLatch() {
 		return this.worldTickLatch;

@@ -28,6 +28,5 @@ public class AsyncWorldTicker extends WorldTicker {
 
 	public void handleParallelTracker() {
 		super.handleTracker();
-		WorldTickerManager.getInstance().getTrackerLatch().decrement();
 	}
 }

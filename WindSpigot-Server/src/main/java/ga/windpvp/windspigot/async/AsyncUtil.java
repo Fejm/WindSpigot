@@ -1,5 +1,6 @@
 package ga.windpvp.windspigot.async;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 
@@ -40,5 +41,13 @@ public class AsyncUtil {
 		MinecraftServer.getServer().priorityProcessQueue.add(runnable);
 	}
 
+	/**
+	 * Run a given task async, then run another after it is complete
+	 * @param firstRunnable
+	 * @param secondRunnable
+	 */
+	public static void runThenRun(Runnable firstRunnable, Runnable secondRunnable) {
+		CompletableFuture.runAsync(firstRunnable).thenRun(secondRunnable);
+	}
 
 }
