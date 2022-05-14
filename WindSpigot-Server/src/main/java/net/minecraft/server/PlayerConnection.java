@@ -1154,57 +1154,60 @@ public class PlayerConnection implements PacketListenerPlayIn, IUpdatePlayerList
 
 	}
 
-	public synchronized void sendPacket(final Packet packet) {
-		if (packet instanceof PacketPlayOutChat) {
-			PacketPlayOutChat packetplayoutchat = (PacketPlayOutChat) packet;
-			EntityHuman.EnumChatVisibility flags = this.player.getChatFlags();
-
-			if (flags == EntityHuman.EnumChatVisibility.HIDDEN) {
-				return;
+	public void sendPacket(final Packet packet) {
+		// WindSpigot - synchronize
+		synchronized (this.networkManager) {
+			if (packet instanceof PacketPlayOutChat) {
+				PacketPlayOutChat packetplayoutchat = (PacketPlayOutChat) packet;
+				EntityHuman.EnumChatVisibility flags = this.player.getChatFlags();
+	
+				if (flags == EntityHuman.EnumChatVisibility.HIDDEN) {
+					return;
+				}
+	
+				if (flags == EntityHuman.EnumChatVisibility.SYSTEM && !packetplayoutchat.b()) {
+					return;
+				}
 			}
-
-			if (flags == EntityHuman.EnumChatVisibility.SYSTEM && !packetplayoutchat.b()) {
+	
+			// CraftBukkit start
+			if (packet == null || this.processedDisconnect) { // Spigot
 				return;
+			} else if (packet instanceof PacketPlayOutSpawnPosition) {
+				PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet;
+				this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.position.getX(),
+						packet6.position.getY(), packet6.position.getZ());
 			}
-		}
-
-		// CraftBukkit start
-		if (packet == null || this.processedDisconnect) { // Spigot
-			return;
-		} else if (packet instanceof PacketPlayOutSpawnPosition) {
-			PacketPlayOutSpawnPosition packet6 = (PacketPlayOutSpawnPosition) packet;
-			this.player.compassTarget = new Location(this.getPlayer().getWorld(), packet6.position.getX(),
-					packet6.position.getY(), packet6.position.getZ());
-		}
-		// CraftBukkit end
-
-		try {
-			for (dev.cobblesword.nachospigot.protocol.PacketListener packetListener : Nacho.get()
-					.getPacketListeners()) {
-				try {
-					if (!packetListener.onSentPacket(this, packet)) {
-						return;
+			// CraftBukkit end
+	
+			try {
+				for (dev.cobblesword.nachospigot.protocol.PacketListener packetListener : Nacho.get()
+						.getPacketListeners()) {
+					try {
+						if (!packetListener.onSentPacket(this, packet)) {
+							return;
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
-				} catch (Exception e) {
-					e.printStackTrace();
 				}
+				this.networkManager.handle(packet);
+			} catch (Throwable throwable) {
+				CrashReport crashreport = CrashReport.a(throwable, "Sending packet");
+				CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Packet being sent");
+	
+				crashreportsystemdetails.a("Packet class", new Callable() {
+					public String a() throws Exception {
+						return packet.getClass().getCanonicalName();
+					}
+	
+					@Override
+					public Object call() throws Exception {
+						return this.a();
+					}
+				});
+				throw new ReportedException(crashreport);
 			}
-			this.networkManager.handle(packet);
-		} catch (Throwable throwable) {
-			CrashReport crashreport = CrashReport.a(throwable, "Sending packet");
-			CrashReportSystemDetails crashreportsystemdetails = crashreport.a("Packet being sent");
-
-			crashreportsystemdetails.a("Packet class", new Callable() {
-				public String a() throws Exception {
-					return packet.getClass().getCanonicalName();
-				}
-
-				@Override
-				public Object call() throws Exception {
-					return this.a();
-				}
-			});
-			throw new ReportedException(crashreport);
 		}
 	}
 

@@ -385,7 +385,8 @@ public class NetworkManager extends SimpleChannelInboundHandler<Packet> {
 		this.sendPacketQueue();
 	}
 
-	public void tick() {
+	// WindSpigot - synchronize
+	public synchronized void tick() {
 		this.sendPacketQueue();
 		if (this.m instanceof IUpdatePlayerListBox) {
 			((IUpdatePlayerListBox) this.m).c();
