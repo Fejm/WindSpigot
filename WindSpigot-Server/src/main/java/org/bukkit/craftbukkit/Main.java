@@ -179,22 +179,6 @@ public class Main {
 
 				System.setProperty( "library.jansi.version", "Paper" ); // Paper - set meaningless jansi version to prevent git builds from crashing on Windows
 
-				// Spigot Start
-				int maxPermGen = 0; // In kb
-				for (String s : java.lang.management.ManagementFactory.getRuntimeMXBean().getInputArguments()) {
-					if (s.startsWith("-XX:MaxPermSize")) {
-						maxPermGen = Integer.parseInt(s.replaceAll("[^\\d]", ""));
-						maxPermGen <<= 10 * ("kmg".indexOf(Character.toLowerCase(s.charAt(s.length() - 1))));
-					}
-				}
-				if (Float.parseFloat(System.getProperty("java.class.version")) < 52 && maxPermGen < (128 << 10)) // 128mb
-				{
-					System.out.println(
-							"Warning, your max perm gen size is not set or less than 128mb. It is recommended you restart Java with the following argument: -XX:MaxPermSize=128M");
-					System.out.println(
-							"Please see http://www.spigotmc.org/wiki/changing-permgen-size/ for more details and more in-depth instructions.");
-				}
-
 				// Paper start - Log Java and OS versioning to help with debugging plugin issues
 				java.lang.management.RuntimeMXBean runtimeMX = java.lang.management.ManagementFactory.getRuntimeMXBean();
 				java.lang.management.OperatingSystemMXBean osMX = java.lang.management.ManagementFactory.getOperatingSystemMXBean();
@@ -208,7 +192,6 @@ public class Main {
 				}
 				// Paper end
 
-				// Spigot End
 				net.techcable.tacospigot.TacoSpigotConfig.init((File) options.valueOf("taco-settings")); // TacoSpigot -
 																											// load
 																											// config
