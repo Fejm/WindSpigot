@@ -1,17 +1,16 @@
 package org.bukkit.craftbukkit.util;
 
+/*
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-
 import org.bukkit.craftbukkit.Main;
-
 import com.mojang.util.QueueLogAppender;
-
 import jline.console.ConsoleReader;
+*/
 
-public class TerminalConsoleWriterThread implements Runnable {
+public class TerminalConsoleWriterThread /*implements Runnable*/ { /*
 	final private ConsoleReader reader;
 	final private OutputStream output;
 
@@ -53,4 +52,5 @@ public class TerminalConsoleWriterThread implements Runnable {
 			}
 		}
 	}
+*/
 }

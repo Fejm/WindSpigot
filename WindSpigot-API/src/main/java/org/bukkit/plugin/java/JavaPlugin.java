@@ -56,7 +56,7 @@ public abstract class JavaPlugin extends PluginBase {
 	private EbeanServer ebean = null;
 	private FileConfiguration newConfig = null;
 	private File configFile = null;
-	private PluginLogger logger = null;
+	Logger logger = null; // Paper - PluginLogger -> Logger, package-private
 
 	public JavaPlugin() {
 		final ClassLoader classLoader = this.getClass().getClassLoader();
@@ -360,7 +360,11 @@ public abstract class JavaPlugin extends PluginBase {
 		this.dataFolder = dataFolder;
 		this.classLoader = classLoader;
 		this.configFile = new File(dataFolder, "config.yml");
-		this.logger = new PluginLogger(this);
+		// Paper start
+		if (this.logger == null) {
+			this.logger = com.destroystokyo.paper.utils.PaperPluginLogger.getLogger(this.description);
+		}
+		// Paper end
 
 		if (description.isDatabaseEnabled()) {
 			ServerConfig db = new ServerConfig();

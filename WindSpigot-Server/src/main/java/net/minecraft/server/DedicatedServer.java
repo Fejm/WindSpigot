@@ -76,7 +76,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
 					return;
 				}
 				// CraftBukkit end
-
+				// Paper start - Use TerminalConsoleAppender
+				new com.destroystokyo.paper.console.PaperConsole(DedicatedServer.this).start();
+                /*
 				jline.console.ConsoleReader bufferedreader = reader; // CraftBukkit
 				String s;
 
@@ -96,7 +98,8 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
 				} catch (IOException ioexception) {
 					DedicatedServer.LOGGER.error("Exception handling console input", ioexception);
 				}
-
+                */
+				// Paper end
 			}
 		};
 
@@ -108,6 +111,9 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
 		}
 		global.addHandler(new org.bukkit.craftbukkit.util.ForwardLogHandler());
 
+		// Paper start - Not needed with TerminalConsoleAppender
+		final org.apache.logging.log4j.Logger logger = LogManager.getRootLogger();
+		/*
 		final org.apache.logging.log4j.core.Logger logger = ((org.apache.logging.log4j.core.Logger) LogManager
 				.getRootLogger());
 		for (org.apache.logging.log4j.core.Appender appender : logger.getAppenders().values()) {
@@ -117,9 +123,15 @@ public class DedicatedServer extends MinecraftServer implements IMinecraftServer
 		}
 
 		new Thread(new org.bukkit.craftbukkit.util.TerminalConsoleWriterThread(System.out, this.reader)).start();
+		*/
+		// Paper end
 
-		System.setOut(new PrintStream(new LoggerOutputStream(logger, Level.INFO), true));
-		System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
+		// Paper start - Use Log4j IOStreams
+		System.setOut(org.apache.logging.log4j.io.IoBuilder.forLogger(logger).setLevel(Level.INFO).buildPrintStream());
+		System.setErr(org.apache.logging.log4j.io.IoBuilder.forLogger(logger).setLevel(Level.WARN).buildPrintStream());
+		//System.setOut(new PrintStream(new LoggerOutputStream(logger, Level.INFO), true));
+		//System.setErr(new PrintStream(new LoggerOutputStream(logger, Level.WARN), true));
+		// Paper end
 		// CraftBukkit end
 
 		thread.setDaemon(true);

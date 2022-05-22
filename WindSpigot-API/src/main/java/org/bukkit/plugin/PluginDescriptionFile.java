@@ -17,6 +17,7 @@ import org.bukkit.permissions.Permissible;
 import org.bukkit.permissions.Permission;
 import org.bukkit.permissions.PermissionDefault;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.AbstractConstruct;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
@@ -230,6 +231,7 @@ public final class PluginDescriptionFile {
 	};
 	String rawName = null;
 	private String name = null;
+	private List<String> provides = ImmutableList.of();
 	private String main = null;
 	private String classLoaderOf = null;
 	private List<String> depend = ImmutableList.of();
@@ -307,6 +309,37 @@ public final class PluginDescriptionFile {
 	 */
 	public String getName() {
 		return name;
+	}
+
+	/**
+	 * Gives the list of other plugin APIs which this plugin provides.
+	 * These are usable for other plugins to depend on.
+	 * <ul>
+	 * <li>Must consist of all alphanumeric characters, underscores, hyphon,
+	 *     and period (a-z,A-Z,0-9, _.-). Any other character will cause the
+	 *     plugin.yml to fail loading.
+	 * <li>A different plugin providing the same one or using it as their name
+	 *     will not result in the plugin to fail loading.
+	 * <li>Case sensitive.
+	 * <li>An entry of this list can be referenced in {@link #getDepend()},
+	 *    {@link #getSoftDepend()}, and {@link #getLoadBefore()}.
+	 * <li><code>provides</code> must be in <a
+	 *     href="http://en.wikipedia.org/wiki/YAML#Lists">YAML list
+	 *     format</a>.
+	 * </ul>
+	 * <p>
+	 * In the plugin.yml, this entry is named <code>provides</code>.
+	 * <p>
+	 * Example:
+	 * <blockquote><pre>provides:
+	 *- OtherPluginName
+	 *- OldPluginName</pre></blockquote>
+	 *
+	 * @return immutable list of the plugin APIs which this plugin provides
+	 */
+	@NotNull
+	public List<String> getProvides() {
+		return provides;
 	}
 
 	/**
@@ -1057,6 +1090,8 @@ public final class PluginDescriptionFile {
 			throw new InvalidDescriptionException(ex, "name is of wrong type");
 		}
 
+		provides = makePluginNameList(map, "provides");
+
 		try {
 			version = map.get("version").toString();
 		} catch (NullPointerException ex) {
@@ -1215,9 +1250,12 @@ public final class PluginDescriptionFile {
 	}
 
 	private Map<String, Object> saveMap() {
-		Map<String, Object> map = new HashMap<String, Object>();
+		Map<String, Object> map = new HashMap<>();
 
 		map.put("name", name);
+		if (provides != null) {
+			map.put("provides", provides);
+		}
 		map.put("main", main);
 		map.put("version", version);
 		map.put("database", database);

@@ -44,7 +44,6 @@ import io.netty.handler.codec.base64.Base64;
 import io.netty.util.ResourceLeakDetector;
 
 // CraftBukkit start
-import jline.console.ConsoleReader;
 import joptsimple.OptionSet;
 // CraftBukkit end
 
@@ -63,7 +62,7 @@ import ga.windpvp.windspigot.world.WorldTickManager;
 
 public abstract class MinecraftServer implements Runnable, ICommandListener, IAsyncTaskHandler, IMojangStatistics {
 
-	public static final Logger LOGGER = LogManager.getLogger();
+	public static final Logger LOGGER = LogManager.getLogger(MinecraftServer.class);
 	public static final File a = new File("usercache.json");
 	private static MinecraftServer l;
 	public Convertable convertable;
@@ -129,7 +128,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
 	public OptionSet options;
 	public org.bukkit.command.ConsoleCommandSender console;
 	public org.bukkit.command.RemoteConsoleCommandSender remoteConsole;
-	public ConsoleReader reader;
+	//public ConsoleReader reader; // Paper
 	public static int currentTick = 0; // PaperSpigot - Further improve tick loop
 	public final Thread primaryThread;
 	public java.util.Queue<Runnable> processQueue = new java.util.concurrent.ConcurrentLinkedQueue<Runnable>();
@@ -161,6 +160,9 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
 		this.Y = this.V.createProfileRepository();
 		// CraftBukkit start
 		this.options = options;
+		// Paper start - Handled by TerminalConsoleAppender
+		// Try to see if we're actually running in a terminal, disable jline if not
+        /*
 		// Try to see if we're actually running in a terminal, disable jline if not
 		if (System.console() == null && System.getProperty("jline.terminal") == null) {
 			System.setProperty("jline.terminal", "jline.UnsupportedTerminal");
@@ -183,6 +185,7 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
 				LOGGER.warn((String) null, ex);
 			}
 		}
+        */
 		Runtime.getRuntime().addShutdownHook(new org.bukkit.craftbukkit.util.ServerShutdownThread(this));
 
 		this.serverThread = primaryThread = new Thread(this, "Server thread"); // Moved from main
@@ -782,7 +785,8 @@ public abstract class MinecraftServer implements Runnable, ICommandListener, IAs
 			} finally {
 				// CraftBukkit start - Restore terminal to original settings
 				try {
-					reader.getTerminal().restore();
+					//reader.getTerminal().restore(); // Paper - Use TerminalConsoleAppender
+					net.minecrell.terminalconsole.TerminalConsoleAppender.close(); // Paper - Use TerminalConsoleAppender
 				} catch (Exception ignored) {
 				}
 				// CraftBukkit end

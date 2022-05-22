@@ -1,5 +1,6 @@
 package org.bukkit.craftbukkit.command;
 
+/*
 import java.util.EnumMap;
 import java.util.Map;
 
@@ -12,8 +13,9 @@ import org.fusesource.jansi.Ansi.Attribute;
 
 import ga.windpvp.windspigot.WindSpigot;
 import jline.Terminal;
+*/
 
-public class ColouredConsoleSender extends CraftConsoleCommandSender {
+public class ColouredConsoleSender /*extends CraftConsoleCommandSender*/ { /*
 	private final Terminal terminal;
 	private final Map<ChatColor, String> replacements = new EnumMap<ChatColor, String>(ChatColor.class);
 	private final ChatColor[] colors = ChatColor.values();
@@ -75,4 +77,5 @@ public class ColouredConsoleSender extends CraftConsoleCommandSender {
 			return new ColouredConsoleSender();
 		}
 	}
+	*/
 }

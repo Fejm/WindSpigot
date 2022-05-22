@@ -15,6 +15,7 @@ import org.fusesource.jansi.AnsiConsole;
 import joptsimple.OptionParser;
 import joptsimple.OptionSet;
 import net.minecraft.server.MinecraftServer;
+import net.minecrell.terminalconsole.TerminalConsoleAppender; // Paper
 
 public class Main {
 	public static boolean useJline = true;
@@ -143,6 +144,8 @@ public class Main {
 			}
 
 			try {
+				// Paper start - Handled by TerminalConsoleAppender
+                /*
 				// This trick bypasses Maven Shade's clever rewriting of our getProperty call
 				// when using String literals
 				String jline_UnsupportedTerminal = new String(new char[] { 'j', 'l', 'i', 'n', 'e', '.', 'U', 'n', 's',
@@ -151,12 +154,14 @@ public class Main {
 						new char[] { 'j', 'l', 'i', 'n', 'e', '.', 't', 'e', 'r', 'm', 'i', 'n', 'a', 'l' });
 
 				useJline = !(jline_UnsupportedTerminal).equals(System.getProperty(jline_terminal));
+                */
 
 				if (options.has("nojline")) {
 					System.setProperty("user.language", "en");
 					useJline = false;
 				}
 
+				/*
 				if (useJline) {
 					System.setProperty("library.jansi.version", "NachoSpigot");
 					AnsiConsole.systemInstall();
@@ -164,10 +169,15 @@ public class Main {
 					// This ensures the terminal literal will always match the jline implementation
 					System.setProperty(jline.TerminalFactory.JLINE_TERMINAL, jline.UnsupportedTerminal.class.getName());
 				}
+				*/
 
 				if (options.has("noconsole")) {
 					useConsole = false;
+					useJline = false; // Paper
+					System.setProperty(TerminalConsoleAppender.JLINE_OVERRIDE_PROPERTY, "false"); // Paper
 				}
+
+				System.setProperty( "library.jansi.version", "Paper" ); // Paper - set meaningless jansi version to prevent git builds from crashing on Windows
 
 				// Spigot Start
 				int maxPermGen = 0; // In kb

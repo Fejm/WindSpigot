@@ -1,53 +1,36 @@
 package net.minecraft.server;
 
-import java.io.File;
-import java.net.SocketAddress;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
+import com.eatthepath.uuid.FastUUID;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.mojang.authlib.GameProfile;
+import ga.windpvp.windspigot.WindSpigot;
+import ga.windpvp.windspigot.async.AsyncUtil;
+import ga.windpvp.windspigot.config.WindSpigotConfig;
+import io.netty.buffer.Unpooled;
+import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.TravelAgent;
-// CraftBukkit start
 import org.bukkit.craftbukkit.CraftServer;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.chunkio.ChunkIOExecutor;
 import org.bukkit.craftbukkit.inventory.CraftInventoryView;
 import org.bukkit.craftbukkit.util.CraftChatMessage;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.event.player.PlayerPortalEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.event.player.PlayerTeleportEvent.TeleportCause;
 import org.bukkit.util.Vector;
 import org.spigotmc.event.player.PlayerSpawnLocationEvent;
-// CraftBukkit end
 
-import com.eatthepath.uuid.FastUUID;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.mojang.authlib.GameProfile;
-
-import ga.windpvp.windspigot.WindSpigot;
-import ga.windpvp.windspigot.async.AsyncUtil;
-import ga.windpvp.windspigot.config.WindSpigotConfig;
-import io.netty.buffer.Unpooled;
-import it.unimi.dsi.fastutil.objects.Object2ObjectArrayMap;
-import me.elier.nachospigot.config.NachoConfig;
+import java.io.File;
+import java.net.SocketAddress;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public abstract class PlayerList {
 
@@ -64,10 +47,10 @@ public abstract class PlayerList {
 																									// Iterator safety
 	// private final Map<UUID, EntityPlayer> j = Maps.newHashMap();
 	// PaperSpigot start - Player lookup improvements
-	public final Map<String, EntityPlayer> playerMap = new Object2ObjectArrayMap<String, EntityPlayer>() {
-		
+	public final Map<String, EntityPlayer> playerMap = new Object2ObjectArrayMap<>() {
+
 		private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-		
+
 		@Override
 		public EntityPlayer put(String key, EntityPlayer value) {
 			lock.writeLock().lock();
@@ -174,9 +157,9 @@ public abstract class PlayerList {
 
 	public PlayerList(MinecraftServer minecraftserver) {
 		this.cserver = minecraftserver.server = new CraftServer(minecraftserver, this);
-		minecraftserver.console = org.bukkit.craftbukkit.command.ColouredConsoleSender.getInstance();
-		minecraftserver.reader
-				.addCompleter(new org.bukkit.craftbukkit.command.ConsoleCommandCompleter(minecraftserver.server));
+		//minecraftserver.console = org.bukkit.craftbukkit.command.ColouredConsoleSender.getInstance();
+		//minecraftserver.reader.addCompleter(new org.bukkit.craftbukkit.command.ConsoleCommandCompleter(minecraftserver.server));
+		minecraftserver.console = new com.destroystokyo.paper.console.TerminalConsoleCommandSender(); // Paper
 		// CraftBukkit end
 
 		this.k = new GameProfileBanList(PlayerList.a);
