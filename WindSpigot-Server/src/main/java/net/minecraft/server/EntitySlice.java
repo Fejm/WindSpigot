@@ -113,15 +113,15 @@ public class EntitySlice<T> extends AbstractSet<T> {
 	}
 
 	public <S> Iterable<S> c(final Class<S> oclass) {
-		return new Iterable() {
+		return new Iterable<>() {
 			@Override
 			public Iterator<S> iterator() {
-				List list = EntitySlice.this.b.get(EntitySlice.this.b(oclass));
+				List<T> list = EntitySlice.this.b.get(EntitySlice.this.b(oclass));
 
 				if (list == null) {
-					return Iterators.emptyIterator();
+					return java.util.Collections.emptyIterator();
 				} else {
-					Iterator iterator = list.iterator();
+					Iterator<T> iterator = list.iterator();
 
 					return Iterators.filter(iterator, oclass);
 				}
@@ -131,7 +131,7 @@ public class EntitySlice<T> extends AbstractSet<T> {
 
 	@Override
 	public Iterator<T> iterator() {
-		return this.e.isEmpty() ? Iterators.<T>emptyIterator() : Iterators.unmodifiableIterator(this.e.iterator());
+		return this.e.isEmpty() ? java.util.Collections.emptyIterator() : Iterators.unmodifiableIterator(this.e.iterator());
 	}
 
 	@Override
