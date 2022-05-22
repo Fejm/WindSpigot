@@ -184,6 +184,20 @@ public class Main {
 					System.out.println(
 							"Please see http://www.spigotmc.org/wiki/changing-permgen-size/ for more details and more in-depth instructions.");
 				}
+
+				// Paper start - Log Java and OS versioning to help with debugging plugin issues
+				java.lang.management.RuntimeMXBean runtimeMX = java.lang.management.ManagementFactory.getRuntimeMXBean();
+				java.lang.management.OperatingSystemMXBean osMX = java.lang.management.ManagementFactory.getOperatingSystemMXBean();
+				if (runtimeMX != null && osMX != null) {
+					String javaInfo = "Java " + runtimeMX.getSpecVersion() + " (" + runtimeMX.getVmName() + " " + runtimeMX.getVmVersion() + ")";
+					String osInfo = "Host: " + osMX.getName() + " " + osMX.getVersion() + " (" + osMX.getArch() + ")";
+
+					System.out.println("System Info: " + javaInfo + " " + osInfo);
+				} else {
+					System.out.println("Unable to read system info");
+				}
+				// Paper end
+
 				// Spigot End
 				net.techcable.tacospigot.TacoSpigotConfig.init((File) options.valueOf("taco-settings")); // TacoSpigot -
 																											// load
