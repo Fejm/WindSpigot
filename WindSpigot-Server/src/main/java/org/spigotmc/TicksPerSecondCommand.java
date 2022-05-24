@@ -27,8 +27,18 @@ public class TicksPerSecondCommand extends Command {
 		double[] tps = org.bukkit.Bukkit.spigot().getTPS();
 		String[] tpsAvg = new String[tps.length];
 
-		for (int i = 0; i < tps.length; i++) {
-			tpsAvg[i] = format(tps[i]);
+		if (args.length == 1 && args[0].equalsIgnoreCase("raw"))
+		{
+			for (int i = 0; i < tps.length; i++)
+			{
+				tpsAvg[i] = formatRaw(tps[i]);
+			}
+		} else
+		{
+			for (int i = 0; i < tps.length; i++)
+			{
+				tpsAvg[i] = format(tps[i]);
+			}
 		}
 		
 		// WindSpigot - more detailed tps cmd
@@ -59,6 +69,11 @@ public class TicksPerSecondCommand extends Command {
 		sender.sendMessage(ChatColor.AQUA + "Milliseconds to Run Last Tick: " + ChatColor.GREEN + Math.round(MinecraftServer.getServer().getLastMspt() * 100.0) / 100.0);
 		
 		return true;
+	}
+
+	private static String formatRaw(double tps) // PaperSpigot - made static
+	{
+		return ((tps > 18.0) ? ChatColor.GREEN : (tps > 16.0) ? ChatColor.YELLOW : ChatColor.RED).toString() + Math.round(tps * 100.0) / 100.0;
 	}
 
 	private static String format(double tps) // PaperSpigot - made static
